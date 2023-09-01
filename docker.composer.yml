@@ -1,0 +1,41 @@
+version: '3.3'
+services:
+
+  institucional_db:
+    image: 'mysql:5.7'
+    container_name: institucional_db
+    volumes:
+      - './mysql:/var/lib/mysql'
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_USER: ${WP_DB_USER}
+      MYSQL_DATABASE: ${WP_DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${WP_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${WP_DB_PASSWORD}
+
+  institucional_web:
+    image: wordpress:php8.1
+    container_name: institucional_web
+    ports:
+      - '80:80'
+      - '443:443'
+    links:
+      - institucional_db
+    volumes:
+      - ./app:/var/www/html
+      - ./config/certs:/var/www/certs:ro
+      - ./config/default-ssl.conf:/etc/apache2/sites-available/default-ssl.conf:ro
+      - ./config/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
+      - ./extras/php.ini:/usr/local/etc/php/conf.d/php.ini
+
+    environment:
+      WEB_DOCUMENT_ROOT: /var/www/html
+      WP_DB_NAME: ${WP_DB_NAME}
+      WP_DB_USER: ${WP_DB_USER}
+      WP_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WP_DB_HOST: ${WP_DB_HOST}
+      WP_S3_ACCESS_KEY: ${WP_S3_ACCESS_KEY}
+      WP_S3_SECRET_KEY: ${WP_S3_SECRET_KEY}
+      WP_S3_BUCKET: ${WP_S3_BUCKET}
+      DOMAIN_CURRENT_SITE: ${DOMAIN_CURRENT_SITE}
